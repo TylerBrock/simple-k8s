@@ -1,0 +1,22 @@
+{
+  "name": "k8stest",
+  "version": "1.0.0",
+  "description": "Kubernetes Test",
+  "main": "index.js",
+  "author": "Tyler Brock",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.16.4",
+    "mongodb": "^3.1.13",
+    "pg": "^7.14.0",
+    "pg-hstore": "^2.3.3",
+    "request": "^2.88.0",
+    "sequelize": "^5.21.2",
+    "useragent": "^2.3.0",
+    "yamlparser": "^0.0.2"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "start-pg": "node index-pg.js"
+  }
+}
