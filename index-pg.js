@@ -19,17 +19,6 @@ useragent(true);
 
 const sequelize = new Sequelize(pgurl);
 
-sequelize
-  .authenticate()
-  .then(async () => {
-    await Vistior.sync();
-    await Counter.sync();
-    console.log('Connection has been established successfully.');
-  })
-  .catch(err => {
-    console.error('Unable to connect to the database:', err);
-  });
-
 class Visitor extends Sequelize.Model {}
 Visitor.init({
   data: Sequelize.JSONB,
@@ -41,6 +30,19 @@ Counter.init({
   count: Sequelize.INTEGER,
 }, { sequelize, modelName: 'counter' });
 
+sequelize
+  .authenticate()
+  .then(async () => {
+    console.log('Connected to database sucessfully');
+    await Visitor.sync();
+    await Counter.sync();
+    console.log('Synchronized models');
+    server = app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+  })
+  .catch(err => {
+    console.error('Unable to connect to the database:', err);
+  });
+
 app.get('/', async (req, res) => {
   const agent = useragent.parse(req.headers['user-agent'], req.query.jsuseragent);
   const date = new Date();
@@ -48,7 +50,7 @@ app.get('/', async (req, res) => {
 
   await Visitor.create({ data });
 
-  const counter = await Counter.findOrCreate({
+  const [counter, created] = await Counter.findOrCreate({
     where: { type: 'visitor' },
     defaults: { count: 0 },
   });
@@ -56,13 +58,14 @@ app.get('/', async (req, res) => {
   counter.count++;
   await counter.save();
 
-  res.send(`Hello World! ${result.value.count}`);
+  res.send(`Hello World! ${counter.count}`);
 });
 
 function shutDown() {
     console.log('Received kill signal, shutting down gracefully');
     server.close(() => {
-      mongoclient.close().then(() => {
+      console.log('Closed Express server');
+      sequelize.close().then(() => {
         console.log('Closed out remaining connections');
         process.exit(0);
       });
